@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Salary Predictor & Interactive ML Simulator</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 27, 45, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --success-color: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            accent-color: var(--accent-primary);
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .slider-val {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            background: rgba(99, 102, 241, 0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 8px;
+            color: #818cf8;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--accent-primary);
+        }
+
+        /* Result Panel Styling */
+        .result-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .salary-box {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 20px;
+            padding: 2rem 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .salary-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #818cf8;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .salary-value {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.02); }
+        }
+
+        /* Math / Simulator breakdown */
+        .formula-section {
+            margin-top: 1rem;
+        }
+
+        .formula-title {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.4rem;
+        }
+
+        .math-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .math-label {
+            color: var(--text-secondary);
+        }
+
+        .math-val {
+            font-weight: 500;
+        }
+
+        .positive { color: var(--success-color); }
+        .negative { color: #f87171; }
+
+        /* Explanations tab */
+        .info-card {
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-box {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.2rem;
+        }
+
+        .info-box h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.6rem;
+            color: #818cf8;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .info-box p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .info-box code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Employee Salary Predictor</h1>
+        <p>An interactive visualization showing Linear Regression & Categorical Encoding in action.</p>
+    </header>
+
+    <div class="container">
+        <!-- Inputs Card -->
+        <div class="card">
+            <h2>🔮 Predictor Inputs</h2>
+            
+            <!-- Experience -->
+            <div class="input-group">
+                <label for="experience">Years of Experience</label>
+                <div class="slider-container">
+                    <input type="range" id="experience" min="0" max="20" value="5" step="0.5">
+                    <div class="slider-val" id="exp-val">5 Years</div>
+                </div>
+            </div>
+
+            <!-- Education Level -->
+            <div class="input-group">
+                <label for="education">Education Level (Ordinal Encoded)</label>
+                <select id="education">
+                    <option value="High School">High School (Encoded: 0)</option>
+                    <option value="Bachelor's" selected>Bachelor's (Encoded: 1)</option>
+                    <option value="Master's">Master's (Encoded: 2)</option>
+                    <option value="PhD">PhD (Encoded: 3)</option>
+                </select>
+            </div>
+
+            <!-- Job Role -->
+            <div class="input-group">
+                <label for="role">Job Role (One-Hot Encoded)</label>
+                <select id="role">
+                    <option value="Director">Director (Reference Category / Base)</option>
+                    <option value="Junior Developer">Junior Developer</option>
+                    <option value="Senior Developer" selected>Senior Developer</option>
+                    <option value="Technical Lead">Technical Lead</option>
+                    <option value="Manager">Manager</option>
+                </select>
+            </div>
+
+            <!-- Location -->
+            <div class="input-group">
+                <label for="location">Location (One-Hot Encoded)</label>
+                <select id="location">
+                    <option value="Metro">Metro (Reference Category / Base)</option>
+                    <option value="Rural">Rural</option>
+                    <option value="Suburban" selected>Suburban</option>
+                    <option value="Urban">Urban</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Result / Math Card -->
+        <div class="card result-panel">
+            <div>
+                <h2>📊 Model Output</h2>
+                <div class="salary-box">
+                    <div class="salary-label">Estimated Salary</div>
+                    <div class="salary-value" id="salary-display">$0.00</div>
+                </div>
+            </div>
+
+            <!-- Live Equation Simulator -->
+            <div class="formula-section">
+                <div class="formula-title">Linear Regression Calculation (Live)</div>
+                
+                <div class="math-line">
+                    <span class="math-label">Base Intercept (Reference Point)</span>
+                    <span class="math-val" id="val-intercept">$145,475.78</span>
+                </div>
+                
+                <div class="math-line">
+                    <span class="math-label">Experience Effect (<span id="math-exp-years">5</span> yrs × $3,190.58)</span>
+                    <span class="math-val positive" id="val-exp">+$15,952.90</span>
+                </div>
+                
+                <div class="math-line">
+                    <span class="math-label">Education level effect (<span id="math-edu-lvl">1</span> × $13,870.17)</span>
+                    <span class="math-val positive" id="val-edu">+$13,870.17</span>
+                </div>
+                
+                <div class="math-line">
+                    <span class="math-label">Job Role offset (<span id="math-role-name">Senior Developer</span>)</span>
+                    <span class="math-val" id="val-role">-$59,025.97</span>
+                </div>
+                
+                <div class="math-line">
+                    <span class="math-label">Location offset (<span id="math-loc-name">Suburban</span>)</span>
+                    <span class="math-val" id="val-loc">-$23,441.87</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ML Explanatory Section -->
+        <div class="card info-card">
+            <h2>💡 What's happening behind the scenes?</h2>
+            <div class="info-grid">
+                <div class="info-box">
+                    <h3>1. Categorical Variable Encoding</h3>
+                    <p>
+                        Our Linear Regression model can't process words. So we encoded them:
+                        <br><br>
+                        • <strong>Ordinal Encoding</strong> for <code>Education</code>: Map categories to ordered integers (0 to 3) because PhD > Master's > Bachelor's > High School.
+                        <br>
+                        • <strong>One-Hot Encoding</strong> for <code>Job Role</code> and <code>Location</code>: Binary indicator columns (0 or 1) are created. We drop the first category (e.g. <em>Director</em> & <em>Metro</em>) to act as the baseline reference in the intercept.
+                    </p>
+                </div>
+                <div class="info-box">
+                    <h3>2. Linear Regression Formula</h3>
+                    <p>
+                        The model predicts salary by adding or subtracting weights based on your selection:
+                        <br><br>
+                        <code>Salary = Base Intercept + (Experience * 3190.58) + (Education_Encoded * 13870.17) + Job_Role_Coefficient + Location_Coefficient</code>
+                        <br><br>
+                        As you adjust the inputs on the left, you can watch the coefficients add up dynamically!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Model Parameters from python train.py output
+        const INTERCEPT = 145475.78;
+        const EXP_COEF = 3190.58;
+        const EDU_COEF = 13870.17;
+
+        // Role Coefficients relative to Director (Director = 0.0)
+        const ROLE_COEFS = {
+            "Director": 0.0,
+            "Junior Developer": -78592.83,
+            "Senior Developer": -59025.97,
+            "Technical Lead": -39128.83,
+            "Manager": -28552.67
+        };
+
+        // Location Coefficients relative to Metro (Metro = 0.0)
+        const LOC_COEFS = {
+            "Metro": 0.0,
+            "Rural": -33536.34,
+            "Suburban": -23441.87,
+            "Urban": -12918.35
+        };
+
+        // DOM elements
+        const expSlider = document.getElementById('experience');
+        const expVal = document.getElementById('exp-val');
+        const eduSelect = document.getElementById('education');
+        const roleSelect = document.getElementById('role');
+        const locSelect = document.getElementById('location');
+
+        const salaryDisplay = document.getElementById('salary-display');
+        const mathExpYears = document.getElementById('math-exp-years');
+        const mathEduLvl = document.getElementById('math-edu-lvl');
+        const mathRoleName = document.getElementById('math-role-name');
+        const mathLocName = document.getElementById('math-loc-name');
+
+        const valExp = document.getElementById('val-exp');
+        const valEdu = document.getElementById('val-edu');
+        const valRole = document.getElementById('val-role');
+        const valLoc = document.getElementById('val-loc');
+
+        const eduMap = {
+            "High School": 0,
+            "Bachelor's": 1,
+            "Master's": 2,
+            "PhD": 3
+        };
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+        }
+
+        function formatOffset(val) {
+            if (val === 0) return "$0.00";
+            return (val >= 0 ? "+" : "") + formatCurrency(val);
+        }
+
+        function calculateAndUpdate() {
+            const exp = parseFloat(expSlider.value);
+            const eduLvl = eduSelect.value;
+            const eduVal = eduMap[eduLvl];
+            const role = roleSelect.value;
+            const location = locSelect.value;
+
+            // Compute components
+            const expContribution = exp * EXP_COEF;
+            const eduContribution = eduVal * EDU_COEF;
+            const roleContribution = ROLE_COEFS[role];
+            const locContribution = LOC_COEFS[location];
+
+            // Total Salary
+            const salary = INTERCEPT + expContribution + eduContribution + roleContribution + locContribution;
+
+            // Update UI Slider Value text
+            expVal.textContent = exp === 1 ? "1 Year" : `${exp} Years`;
+
+            // Update Live equation variables
+            mathExpYears.textContent = exp;
+            mathEduLvl.textContent = eduVal;
+            mathRoleName.textContent = role;
+            mathLocName.textContent = location;
+
+            // Update visual formula components
+            valExp.textContent = formatOffset(expContribution);
+            valEdu.textContent = formatOffset(eduContribution);
+            
+            valRole.textContent = formatOffset(roleContribution);
+            valRole.className = `math-val ${roleContribution >= 0 ? 'positive' : 'negative'}`;
+            if (roleContribution === 0) valRole.className = 'math-val';
+            
+            valLoc.textContent = formatOffset(locContribution);
+            valLoc.className = `math-val ${locContribution >= 0 ? 'positive' : 'negative'}`;
+            if (locContribution === 0) valLoc.className = 'math-val';
+
+            // Main salary value
+            salaryDisplay.textContent = formatCurrency(Math.max(25000, salary));
+        }
+
+        // Add event listeners
+        expSlider.addEventListener('input', calculateAndUpdate);
+        eduSelect.addEventListener('change', calculateAndUpdate);
+        roleSelect.addEventListener('change', calculateAndUpdate);
+        locSelect.addEventListener('change', calculateAndUpdate);
+
+        // Initial running
+        calculateAndUpdate();
+    </script>
+</body>
+</html>
