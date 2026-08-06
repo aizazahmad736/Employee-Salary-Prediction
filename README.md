@@ -42,6 +42,7 @@ For example, if the coefficient for `Years_Experience` is `+$3,200`, it means th
 
 <img width="946" height="439" alt="Screenshot 2026-07-30 162957" src="https://github.com/user-attachments/assets/30220a07-19f3-443f-afbc-5d0769881215" />
 
+<img width="943" height="431" alt="Screenshot 2026-07-30 163008" src="https://github.com/user-attachments/assets/0a55eb65-fd58-4557-8cd5-88a400619aec" />
 
 ## Project Structure
 *   [generate_data.py](file:///c:/Users/Aizaz%20Ahmad/Desktop/Antigravity-Projects/employee-salary-predictor/generate_data.py): Synthesizes a realistic dataset of 1,000 employees.
