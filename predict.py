@@ -168,6 +168,13 @@ def load_csv_predictions(csv_path, artifacts):
     return predict_salary_batch(records, artifacts)
 
 
+def save_predictions_csv(predictions_df, output_dir="outputs"):
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "salary_predictions.csv")
+    predictions_df.to_csv(output_path, index=False)
+    return output_path
+
+
 def print_prediction_summary(predictions_df):
     if predictions_df.empty:
         print("No predictions to display.")
@@ -208,6 +215,29 @@ def prompt_manual_batch(artifacts):
         records.append(record)
 
     return predict_salary_batch(records, artifacts)
+
+
+def create_csv_template(output_dir="outputs"):
+    os.makedirs(output_dir, exist_ok=True)
+    template_path = os.path.join(output_dir, "salary_prediction_template.csv")
+    template_df = pd.DataFrame(
+        [
+            {
+                "Years_Experience": 5,
+                "Education_Level": "Bachelor's",
+                "Job_Role": "Senior Developer",
+                "Location": "Suburban",
+            },
+            {
+                "Years_Experience": 8,
+                "Education_Level": "Master's",
+                "Job_Role": "Manager",
+                "Location": "Urban",
+            },
+        ]
+    )
+    template_df.to_csv(template_path, index=False)
+    return template_path
 
 
 def run_single_prediction(artifacts):
@@ -262,7 +292,8 @@ def run_batch_prediction(artifacts):
     print("\nChoose batch input mode:")
     print("1. Add employees manually")
     print("2. Load from CSV file")
-    mode = input("Select option (1-2): ")
+    print("3. Create CSV template")
+    mode = input("Select option (1-3): ")
 
     try:
         if mode == "1":
@@ -270,10 +301,19 @@ def run_batch_prediction(artifacts):
         elif mode == "2":
             csv_path = input("Enter CSV file path: ").strip()
             predictions = load_csv_predictions(csv_path, artifacts)
+        elif mode == "3":
+            template_path = create_csv_template()
+            print(f"CSV template created at: {template_path}")
+            return
         else:
-            raise ValueError("Please select either 1 or 2.")
+            raise ValueError("Please select either 1, 2, or 3.")
 
         print_prediction_summary(predictions)
+
+        save_choice = input("Save these results to CSV? (y/n): ").strip().lower()
+        if save_choice == "y":
+            output_path = save_predictions_csv(predictions)
+            print(f"Results exported to: {output_path}")
     except (FileNotFoundError, ValueError) as exc:
         print(f"Batch prediction error: {exc}")
 
