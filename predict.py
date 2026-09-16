@@ -168,17 +168,49 @@ def load_csv_predictions(csv_path, artifacts):
     return predict_salary_batch(records, artifacts)
 
 
-def main():
-    try:
-        artifacts = load_artifacts()
-    except FileNotFoundError as e:
-        print(e)
+def print_prediction_summary(predictions_df):
+    if predictions_df.empty:
+        print("No predictions to display.")
         return
 
-    print("=========================================")
-    print("      Employee Salary Predictor App      ")
-    print("=========================================\n")
+    print("\n===== Batch Prediction Summary =====")
+    print(predictions_df.to_string(index=False, formatters={"Predicted_Salary": lambda x: f"${x:,.2f}"}))
 
+    avg_salary = predictions_df["Predicted_Salary"].mean()
+    min_salary = predictions_df["Predicted_Salary"].min()
+    max_salary = predictions_df["Predicted_Salary"].max()
+
+    print("\nSummary Statistics:")
+    print(f"Average Salary: ${avg_salary:,.2f}")
+    print(f"Lowest Salary:  ${min_salary:,.2f}")
+    print(f"Highest Salary: ${max_salary:,.2f}")
+    print("====================================\n")
+
+
+def prompt_manual_batch(artifacts):
+    try:
+        count = int(input("How many employees do you want to evaluate? "))
+    except ValueError:
+        raise ValueError("Please enter a valid number of employees.")
+
+    if count <= 0:
+        raise ValueError("Number of employees must be greater than zero.")
+
+    records = []
+    for i in range(1, count + 1):
+        print(f"\nEmployee {i}")
+        record = {
+            "Years_Experience": float(input("Years of Experience: ")),
+            "Education_Level": input("Education Level (High School / Bachelor's / Master's / PhD): "),
+            "Job_Role": input("Job Role (Junior Developer / Senior Developer / Technical Lead / Manager / Director): "),
+            "Location": input("Location (Rural / Suburban / Urban / Metro): "),
+        }
+        records.append(record)
+
+    return predict_salary_batch(records, artifacts)
+
+
+def run_single_prediction(artifacts):
     try:
         years_exp = float(input("Enter Years of Experience (e.g., 5): "))
 
@@ -224,6 +256,50 @@ def main():
 
     except ValueError as exc:
         print(f"Invalid input: {exc}")
+
+
+def run_batch_prediction(artifacts):
+    print("\nChoose batch input mode:")
+    print("1. Add employees manually")
+    print("2. Load from CSV file")
+    mode = input("Select option (1-2): ")
+
+    try:
+        if mode == "1":
+            predictions = prompt_manual_batch(artifacts)
+        elif mode == "2":
+            csv_path = input("Enter CSV file path: ").strip()
+            predictions = load_csv_predictions(csv_path, artifacts)
+        else:
+            raise ValueError("Please select either 1 or 2.")
+
+        print_prediction_summary(predictions)
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"Batch prediction error: {exc}")
+
+
+def main():
+    try:
+        artifacts = load_artifacts()
+    except FileNotFoundError as e:
+        print(e)
+        return
+
+    print("=========================================")
+    print("      Employee Salary Predictor App      ")
+    print("=========================================\n")
+
+    print("Choose a mode:")
+    print("1. Single Employee Prediction")
+    print("2. Batch Prediction")
+    choice = input("Select option (1-2): ")
+
+    if choice == "1":
+        run_single_prediction(artifacts)
+    elif choice == "2":
+        run_batch_prediction(artifacts)
+    else:
+        print("Invalid choice. Please select 1 or 2.")
 
 
 if __name__ == "__main__":
